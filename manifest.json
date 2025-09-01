@@ -1,0 +1,11 @@
+{
+  "manifest_version": 1,
+  "name": "FNAF Jump Scare",
+  "version": "1.0",
+  "description": "Set a custom",
+  "permissions": ["storage", "activeTab"],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Extension Title"
+  }
+}
