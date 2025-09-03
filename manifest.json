@@ -1,11 +1,24 @@
 {
-  "manifest_version": 1,
+  "manifest_version": 3,
   "name": "FNAF Jump Scare",
   "version": "1.0",
-  "description": "Set a custom",
+  "description": "1Random FNAF jumpscares while browsing",
   "permissions": ["storage", "activeTab"],
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "css": ["content.css"]
+    }
+  ],
   "action": {
     "default_popup": "popup.html",
-    "default_title": "Extension Title"
-  }
+    "default_title": "FNAF Jump Scare"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["videos/*.mp4", "videos/*.mov"],
+      "matches": ["<all_urls>"]
+    }
+  ]
 }
