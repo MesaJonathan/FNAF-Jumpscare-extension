@@ -20,8 +20,7 @@ function getRandomVideo() {
 }
 
 function getRandomDelay() {
-  // return Math.random() * (300000 - 30000) + 30000;
-  return 5000;
+  return Math.random() * (14400000 - 60000) + 60000;
 }
 
 function playJumpscare() {
