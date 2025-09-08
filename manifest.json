@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "FNAF Jump Scare",
-  "version": "1.0",
+  "version": "1.0.0",
   "description": "Random FNAF jumpscares while browsing",
   "icons": {
     "16": "icons/icon16.png",
@@ -23,7 +23,7 @@
   },
   "web_accessible_resources": [
     {
-      "resources": ["videos/*.mp4", "videos/*.mov"],
+      "resources": ["videos/*.mp4"],
       "matches": ["<all_urls>"]
     }
   ]
