@@ -1,37 +1,12 @@
-let isExtensionEnabled = false;
-let jumpscareTimeout = null;
-
-const videos = [
-  'Bonnie.mp4',
-  'Chika.mp4', 
-  'Foxy.mp4',
-  'Freddy.mp4',
-  'Golden Freddy.mp4',
-  'Mangle.mp4',
-  'Puppet.mp4',
-  'Toy Bonnie.mp4',
-  'Toy Chika.mp4',
-  'Toy Freddy.mp4'
-];
-
-function getRandomVideo() {
-  const randomIndex = Math.floor(Math.random() * videos.length);
-  return chrome.runtime.getURL(`videos/${videos[randomIndex]}`);
-}
-
-function getRandomDelay() {
-  return Math.random() * (14400000 - 60000) + 60000;
-}
-
-function playJumpscare() {
-  if (!isExtensionEnabled) return;
+function playJumpscare(videoPath) {
   
   const overlay = document.createElement('div');
   overlay.className = 'fnaf-jumpscare-overlay';
   
   const video = document.createElement('video');
   video.className = 'fnaf-jumpscare-video';
-  video.src = getRandomVideo();
+  const videoUrl = chrome.runtime.getURL(videoPath);
+  video.src = videoUrl;
   video.autoplay = true;
   video.volume = 1.0;
   video.muted = false;
@@ -41,50 +16,41 @@ function playJumpscare() {
   
   video.addEventListener('ended', function() {
     document.body.removeChild(overlay);
-    scheduleNextJumpscare();
   });
   
-  video.addEventListener('error', function() {
+  video.addEventListener('error', function(e) {
     document.body.removeChild(overlay);
-    scheduleNextJumpscare();
+  });
+  
+  video.addEventListener('loadstart', function() {
+    console.log('[Content] Video load started');
+  });
+  
+  video.addEventListener('canplay', function() {
+    console.log('[Content] Video can play');
+  });
+  
+  video.addEventListener('play', function() {
+    console.log('[Content] Video playing');
   });
 }
 
-function scheduleNextJumpscare() {
-  if (!isExtensionEnabled) return;
-  
-  clearTimeout(jumpscareTimeout);
-  const delay = getRandomDelay();
-  jumpscareTimeout = setTimeout(playJumpscare, delay);
-}
-
-function startExtension() {
-  isExtensionEnabled = true;
-  scheduleNextJumpscare();
-}
-
-function stopExtension() {
-  isExtensionEnabled = false;
-  clearTimeout(jumpscareTimeout);
-  
+function stopJumpscares() {
   const existingOverlay = document.querySelector('.fnaf-jumpscare-overlay');
   if (existingOverlay) {
+    console.log('[Content] Removing existing overlay');
     document.body.removeChild(existingOverlay);
+  } else {
+    console.log('[Content] No existing overlay found');
   }
 }
 
-chrome.storage.sync.get(['extensionEnabled'], function(result) {
-  if (result.extensionEnabled) {
-    startExtension();
-  }
-});
-
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
-  if (request.action === 'toggleExtension') {
-    if (request.enabled) {
-      startExtension();
-    } else {
-      stopExtension();
-    }
+  if (request.action === 'playJumpscare') {
+    console.log('[Content] Playing jumpscare with video:', request.video);
+    playJumpscare(request.video);
+  } else if (request.action === 'stopJumpscares') {
+    console.log('[Content] Stopping jumpscares');
+    stopJumpscares();
   }
 });

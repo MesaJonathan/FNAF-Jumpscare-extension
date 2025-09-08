@@ -14,15 +14,15 @@ document.addEventListener('DOMContentLoaded', function() {
     chrome.storage.sync.set({extensionEnabled: isEnabled}, function() {
       updateStatus(isEnabled);
       
-      chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-        chrome.tabs.sendMessage(tabs[0].id, {
-          action: 'toggleExtension',
-          enabled: isEnabled
-        }, function(response) {
-          if (chrome.runtime.lastError) {
-            console.log('Content script not ready:', chrome.runtime.lastError.message);
-          }
-        });
+      chrome.runtime.sendMessage({
+        action: 'toggleExtension',
+        enabled: isEnabled
+      }, function(response) {
+        if (chrome.runtime.lastError) {
+          console.log('[Popup] Background script error:', chrome.runtime.lastError.message);
+        } else {
+          console.log('[Popup] Background response:', response);
+        }
       });
     });
   });
