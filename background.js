@@ -28,41 +28,45 @@ function getRandomDelay() {
   return delay;
 }
 
-function triggerJumpscare() {
+async function triggerJumpscare() {
   console.log('[Background] triggerJumpscare called, enabled:', isExtensionEnabled);
   if (!isExtensionEnabled) return;
   
-  chrome.tabs.query({active: true, lastFocusedWindow: true}, function(tabs) {
+  try {
+    const tabs = await chrome.tabs.query({highlighted: true});
     console.log('tabs query result:', tabs);
     console.log('[Background] Found active tabs:', tabs.length);
+    
     if (tabs.length > 0) {
       const video = getRandomVideo();
       console.log('[Background] Sending jumpscare to tab:', tabs[0].id, 'video:', video);
       
       // Always inject content script first to ensure it's available
-      chrome.scripting.executeScript({
-        target: { tabId: tabs[0].id },
-        files: ['content.js']
-      }, () => {
-        if (chrome.runtime.lastError) {
-          console.log('[Background] Failed to inject content script:', chrome.runtime.lastError.message);
-        } else {
-          // Send message after ensuring content script is injected
-          chrome.tabs.sendMessage(tabs[0].id, {
+      try {
+        await chrome.scripting.executeScript({
+          target: { tabId: tabs[0].id },
+          files: ['content.js']
+        });
+        
+        // Send message after ensuring content script is injected
+        try {
+          await chrome.tabs.sendMessage(tabs[0].id, {
             action: 'playJumpscare',
             video: video
-          }, function(_response) {
-            if (chrome.runtime.lastError) {
-              console.log('[Background] Failed to send jumpscare after injection:', chrome.runtime.lastError.message);
-            } else {
-              console.log('[Background] Jumpscare message sent successfully');
-            }
           });
+          console.log('[Background] Jumpscare message sent successfully');
+        } catch (error) {
+          console.log('[Background] Failed to send jumpscare after injection:', error.message);
         }
-      });
+      } catch (error) {
+        console.log('[Background] Failed to inject content script:', error.message);
+      }
     }
-    scheduleNextJumpscare();
-  });
+  } catch (error) {
+    console.log('[Background] Failed to query tabs:', error.message);
+  }
+  
+  scheduleNextJumpscare();
 }
 
 function scheduleNextJumpscare() {
