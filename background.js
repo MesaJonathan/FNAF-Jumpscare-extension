@@ -1,5 +1,5 @@
 let isExtensionEnabled = false;
-let jumpscareTimeout = null;
+const ALARM_NAME = 'fnafJumpscare';
 
 const videos = [
   'Bonnie.mp4',
@@ -21,11 +21,12 @@ function getRandomVideo() {
   return video;
 }
 
-function getRandomDelay() {
-  // const delay = Math.random() * (10800000 - 300000) + 300000;
-  const delay = 10000;
-  console.log('[Background] Next jumpscare in:', Math.round(delay/1000), 'seconds');
-  return delay;
+function getRandomDelayMinutes() {
+  // Convert to minutes: 5 minutes to 3 hours (180 minutes)
+  // const delayMinutes = Math.random() * (180 - 5) + 5;
+  const delayMinutes = 1; // For testing
+  console.log('[Background] Next jumpscare in:', Math.round(delayMinutes), 'minutes');
+  return delayMinutes;
 }
 
 async function triggerJumpscare() {
@@ -73,9 +74,11 @@ function scheduleNextJumpscare() {
   console.log('[Background] scheduleNextJumpscare called, enabled:', isExtensionEnabled);
   if (!isExtensionEnabled) return;
   
-  clearTimeout(jumpscareTimeout);
-  const delay = getRandomDelay();
-  jumpscareTimeout = setTimeout(triggerJumpscare, delay);
+  // Clear any existing alarm
+  chrome.alarms.clear(ALARM_NAME);
+  
+  const delayMinutes = getRandomDelayMinutes();
+  chrome.alarms.create(ALARM_NAME, { delayInMinutes: delayMinutes });
 }
 
 function startExtension() {
@@ -86,17 +89,39 @@ function startExtension() {
 function stopExtension() {
   console.log('[Background] Stopping extension');
   isExtensionEnabled = false;
-  clearTimeout(jumpscareTimeout);
+  chrome.alarms.clear(ALARM_NAME);
 }
 
-function initializeExtension() {
-  chrome.storage.sync.get(['extensionEnabled'], function(result) {
+async function initializeExtension() {
+  chrome.storage.sync.get(['extensionEnabled'], async function(result) {
     console.log('[Background] Initialize extension, stored state:', result.extensionEnabled);
     if (result.extensionEnabled) {
-      startExtension();
+      isExtensionEnabled = true;
+      
+      // Check if we already have an alarm running
+      const existingAlarm = await chrome.alarms.get(ALARM_NAME);
+      if (!existingAlarm) {
+        // No alarm exists, schedule a new one
+        console.log('[Background] No existing alarm found, scheduling new one');
+        scheduleNextJumpscare();
+      } else {
+        console.log('[Background] Existing alarm found, keeping it');
+      }
     }
   });
 }
+
+// Handle alarm events
+chrome.alarms.onAlarm.addListener(async (alarm) => {
+  if (alarm.name === ALARM_NAME) {
+    // Ensure we're properly initialized before triggering
+    const result = await chrome.storage.sync.get(['extensionEnabled']);
+    if (result.extensionEnabled) {
+      isExtensionEnabled = true;
+      triggerJumpscare();
+    }
+  }
+});
 
 chrome.runtime.onStartup.addListener(initializeExtension);
 chrome.runtime.onInstalled.addListener(initializeExtension);
