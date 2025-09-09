@@ -22,8 +22,8 @@ function getRandomVideo() {
 }
 
 function getRandomDelay() {
-  // const delay = Math.random() * (14400000 - 60000) + 60000;
-  const delay = 5000; // 5 seconds for debugging
+  // const delay = Math.random() * (10800000 - 300000) + 300000;
+  const delay = 10000;
   console.log('[Background] Next jumpscare in:', Math.round(delay/1000), 'seconds');
   return delay;
 }
@@ -38,27 +38,26 @@ function triggerJumpscare() {
     if (tabs.length > 0) {
       const video = getRandomVideo();
       console.log('[Background] Sending jumpscare to tab:', tabs[0].id, 'video:', video);
-      chrome.tabs.sendMessage(tabs[0].id, {
-        action: 'playJumpscare',
-        video: video
-      }, function(response) {
+      
+      // Always inject content script first to ensure it's available
+      chrome.scripting.executeScript({
+        target: { tabId: tabs[0].id },
+        files: ['content.js']
+      }, () => {
         if (chrome.runtime.lastError) {
-          console.log('[Background] Failed to send jumpscare:', chrome.runtime.lastError.message);
-          // Try to inject content script and retry
-          chrome.scripting.executeScript({
-            target: { tabId: tabs[0].id },
-            files: ['content.js']
-          }, () => {
-            if (!chrome.runtime.lastError) {
-              // Retry sending message after injection
-              chrome.tabs.sendMessage(tabs[0].id, {
-                action: 'playJumpscare',
-                video: video
-              });
+          console.log('[Background] Failed to inject content script:', chrome.runtime.lastError.message);
+        } else {
+          // Send message after ensuring content script is injected
+          chrome.tabs.sendMessage(tabs[0].id, {
+            action: 'playJumpscare',
+            video: video
+          }, function(_response) {
+            if (chrome.runtime.lastError) {
+              console.log('[Background] Failed to send jumpscare after injection:', chrome.runtime.lastError.message);
+            } else {
+              console.log('[Background] Jumpscare message sent successfully');
             }
           });
-        } else {
-          console.log('[Background] Jumpscare message sent successfully');
         }
       });
     }
@@ -86,13 +85,21 @@ function stopExtension() {
   clearTimeout(jumpscareTimeout);
 }
 
-chrome.storage.sync.get(['extensionEnabled'], function(result) {
-  if (result.extensionEnabled) {
-    startExtension();
-  }
-});
+function initializeExtension() {
+  chrome.storage.sync.get(['extensionEnabled'], function(result) {
+    console.log('[Background] Initialize extension, stored state:', result.extensionEnabled);
+    if (result.extensionEnabled) {
+      startExtension();
+    }
+  });
+}
 
-chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
+chrome.runtime.onStartup.addListener(initializeExtension);
+chrome.runtime.onInstalled.addListener(initializeExtension);
+
+initializeExtension();
+
+chrome.runtime.onMessage.addListener(function(request, _sender, sendResponse) {
   if (request.action === 'toggleExtension') {
     if (request.enabled) {
       startExtension();
