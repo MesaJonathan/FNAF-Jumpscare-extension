@@ -17,30 +17,25 @@ const videos = [
 function getRandomVideo() {
   const randomIndex = Math.floor(Math.random() * videos.length);
   const video = `videos/${videos[randomIndex]}`;
-  console.log('[Background] Selected video:', video);
+
   return video;
 }
 
 function getRandomDelayMinutes() {
   // Convert to minutes: 5 minutes to 3 hours (180 minutes)
-  // const delayMinutes = Math.random() * (180 - 5) + 5;
-  const delayMinutes = 1; // For testing
-  console.log('[Background] Next jumpscare in:', Math.round(delayMinutes), 'minutes');
+  const delayMinutes = Math.random() * (180 - 5) + 5;
+  // const delayMinutes = 1; // For testing
   return delayMinutes;
 }
 
 async function triggerJumpscare() {
-  console.log('[Background] triggerJumpscare called, enabled:', isExtensionEnabled);
   if (!isExtensionEnabled) return;
   
   try {
     const tabs = await chrome.tabs.query({highlighted: true});
-    console.log('tabs query result:', tabs);
-    console.log('[Background] Found active tabs:', tabs.length);
     
     if (tabs.length > 0) {
       const video = getRandomVideo();
-      console.log('[Background] Sending jumpscare to tab:', tabs[0].id, 'video:', video);
       
       // Always inject content script first to ensure it's available
       try {
@@ -55,7 +50,6 @@ async function triggerJumpscare() {
             action: 'playJumpscare',
             video: video
           });
-          console.log('[Background] Jumpscare message sent successfully');
         } catch (error) {
           console.log('[Background] Failed to send jumpscare after injection:', error.message);
         }
@@ -71,7 +65,6 @@ async function triggerJumpscare() {
 }
 
 function scheduleNextJumpscare() {
-  console.log('[Background] scheduleNextJumpscare called, enabled:', isExtensionEnabled);
   if (!isExtensionEnabled) return;
   
   // Clear any existing alarm
@@ -87,14 +80,12 @@ function startExtension() {
 }
 
 function stopExtension() {
-  console.log('[Background] Stopping extension');
   isExtensionEnabled = false;
   chrome.alarms.clear(ALARM_NAME);
 }
 
 async function initializeExtension() {
   chrome.storage.sync.get(['extensionEnabled'], async function(result) {
-    console.log('[Background] Initialize extension, stored state:', result.extensionEnabled);
     if (result.extensionEnabled) {
       isExtensionEnabled = true;
       
@@ -102,10 +93,7 @@ async function initializeExtension() {
       const existingAlarm = await chrome.alarms.get(ALARM_NAME);
       if (!existingAlarm) {
         // No alarm exists, schedule a new one
-        console.log('[Background] No existing alarm found, scheduling new one');
         scheduleNextJumpscare();
-      } else {
-        console.log('[Background] Existing alarm found, keeping it');
       }
     }
   });

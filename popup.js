@@ -20,8 +20,6 @@ document.addEventListener('DOMContentLoaded', function() {
       }, function(response) {
         if (chrome.runtime.lastError) {
           console.log('[Popup] Background script error:', chrome.runtime.lastError.message);
-        } else {
-          console.log('[Popup] Background response:', response);
         }
       });
     });
