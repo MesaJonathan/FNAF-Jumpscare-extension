@@ -24,7 +24,7 @@ function getRandomVideo() {
 function getRandomDelayMinutes() {
   // Convert to minutes: 5 minutes to 3 hours (180 minutes)
   const delayMinutes = Math.random() * (180 - 5) + 5;
-  // const delayMinutes = 1; // For testing
+  // const delayMinutes = 1;
   return delayMinutes;
 }
 
