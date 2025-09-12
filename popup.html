@@ -72,11 +72,208 @@
       font-size: 14px;
       opacity: 0.8;
     }
+    
+    .timing-control {
+      margin: 15px 0;
+      text-align: left;
+    }
+    
+    .timing-label {
+      font-size: 12px;
+      margin-bottom: 8px;
+      color: #ccc;
+    }
+    
+    .dual-range-container {
+      position: relative;
+      margin: 20px 0;
+      height: 30px;
+    }
+    
+    .dual-range-slider {
+      position: absolute;
+      width: 100%;
+      height: 4px;
+      background: transparent;
+      outline: none;
+      -webkit-appearance: none;
+      pointer-events: none;
+      top: 13px;
+    }
+    
+    .dual-range-slider::-webkit-slider-thumb {
+      appearance: none;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #ff6b35;
+      cursor: pointer;
+      pointer-events: all;
+      transition: all 0.3s ease;
+      position: relative;
+      z-index: 3;
+      border: 2px solid #fff;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    }
+    
+    .dual-range-slider::-webkit-slider-thumb:hover {
+      transform: scale(1.1);
+      box-shadow: 0 3px 10px rgba(255,107,53,0.4);
+    }
+    
+    .dual-range-slider::-moz-range-thumb {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #ff6b35;
+      cursor: pointer;
+      border: 2px solid #fff;
+      pointer-events: all;
+      position: relative;
+      z-index: 3;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+      transition: all 0.3s ease;
+    }
+    
+    .dual-range-slider::-moz-range-thumb:hover {
+      transform: scale(1.1);
+      box-shadow: 0 3px 10px rgba(255,107,53,0.4);
+    }
+    
+    .dual-range-track {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 100%;
+      height: 4px;
+      background: #444;
+      border-radius: 2px;
+      z-index: 1;
+    }
+    
+    .dual-range-fill {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      height: 8px;
+      background: linear-gradient(90deg, #ff6b35, #ff8c42);
+      border-radius: 4px;
+      z-index: 2;
+      box-shadow: 0 2px 8px rgba(255,107,53,0.3);
+    }
+    
+    .dual-range-slider:disabled {
+      opacity: 0.4;
+    }
+    
+    .dual-range-slider:disabled::-webkit-slider-thumb {
+      cursor: not-allowed;
+      background: #666;
+      border-color: #888;
+      box-shadow: none;
+    }
+    
+    .dual-range-slider:disabled::-moz-range-thumb {
+      cursor: not-allowed;
+      background: #666;
+      border-color: #888;
+      box-shadow: none;
+    }
+    
+    .range-values {
+      display: flex;
+      justify-content: space-between;
+      font-size: 9px;
+      color: #777;
+      margin-top: 2px;
+    }
+    
+    .current-value {
+      font-size: 13px;
+      color: #ff6b35;
+      margin: 8px 0;
+      font-weight: 500;
+      text-align: center;
+    }
+    
+    .presets-container {
+      margin: 10px 0;
+    }
+    
+    .presets-label {
+      font-size: 11px;
+      color: #aaa;
+      margin-bottom: 6px;
+    }
+    
+    .preset-buttons {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    
+    .preset-btn {
+      background: #444;
+      border: 1px solid #555;
+      color: #ccc;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 10px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    
+    .preset-btn:hover {
+      background: #ff6b35;
+      color: #fff;
+      border-color: #ff6b35;
+    }
+    
+    .preset-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+    
+    .preset-btn:disabled:hover {
+      background: #444;
+      color: #ccc;
+      border-color: #555;
+    }
   </style>
 </head>
 <body>
   <div class="container">
     <div class="title">FNAF Jumpscares</div>
+    
+    <div class="timing-control">
+      <div class="timing-label">Jumpscare Window</div>
+      
+      <div class="dual-range-container">
+        <input type="range" id="minTimingSlider" class="dual-range-slider dual-range-min" min="1" max="180" value="5">
+        <input type="range" id="maxTimingSlider" class="dual-range-slider dual-range-max" min="1" max="180" value="90">
+        <div class="dual-range-track"></div>
+        <div class="dual-range-fill" id="rangeFill"></div>
+      </div>
+      
+      <div class="range-values">
+        <span>1 min</span>
+        <span>3 hrs</span>
+      </div>
+      
+      <div class="current-value" id="currentValue">5 mins - 1h 30m</div>
+      
+      <div class="presets-container">
+        <div class="presets-label">Quick Presets:</div>
+        <div class="preset-buttons">
+          <button class="preset-btn" data-min="1" data-max="5">1-5 min</button>
+          <button class="preset-btn" data-min="5" data-max="15">5-15 min</button>
+          <button class="preset-btn" data-min="10" data-max="30">10-30 min</button>
+          <button class="preset-btn" data-min="30" data-max="60">30min-1h</button>
+          <button class="preset-btn" data-min="60" data-max="120">1-2 hrs</button>
+          <button class="preset-btn" data-min="30" data-max="180">30min-3h</button>
+        </div>
+      </div>
+    </div>
     
     <label class="switch">
       <input type="checkbox" id="enableSwitch">

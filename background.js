@@ -21,11 +21,16 @@ function getRandomVideo() {
   return video;
 }
 
-function getRandomDelayMinutes() {
-  // Convert to minutes: 5 minutes to 3 hours (180 minutes)
-  const delayMinutes = Math.random() * (180 - 5) + 5;
-  // const delayMinutes = 1;
-  return delayMinutes;
+async function getRandomDelayMinutes() {
+  return new Promise((resolve) => {
+    chrome.storage.sync.get(['minDelayMinutes', 'maxDelayMinutes'], function(result) {
+      const minDelay = result.minDelayMinutes || 5;
+      const maxDelay = result.maxDelayMinutes || 90;
+      // Random delay between user-selected min and max
+      const delayMinutes = Math.random() * (maxDelay - minDelay) + minDelay;
+      resolve(delayMinutes);
+    });
+  });
 }
 
 async function triggerJumpscare() {
@@ -64,13 +69,13 @@ async function triggerJumpscare() {
   scheduleNextJumpscare();
 }
 
-function scheduleNextJumpscare() {
+async function scheduleNextJumpscare() {
   if (!isExtensionEnabled) return;
   
   // Clear any existing alarm
   chrome.alarms.clear(ALARM_NAME);
   
-  const delayMinutes = getRandomDelayMinutes();
+  const delayMinutes = await getRandomDelayMinutes();
   chrome.alarms.create(ALARM_NAME, { delayInMinutes: delayMinutes });
 }
 
@@ -93,7 +98,7 @@ async function initializeExtension() {
       const existingAlarm = await chrome.alarms.get(ALARM_NAME);
       if (!existingAlarm) {
         // No alarm exists, schedule a new one
-        scheduleNextJumpscare();
+        await scheduleNextJumpscare();
       }
     }
   });
