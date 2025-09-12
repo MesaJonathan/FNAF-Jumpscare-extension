@@ -29,9 +29,15 @@ document.addEventListener('DOMContentLoaded', function() {
     let minDelay = parseInt(minTimingSlider.value);
     let maxDelay = parseInt(maxTimingSlider.value);
     
-    // Ensure min doesn't exceed max
-    if (minDelay > maxDelay) {
-      maxDelay = minDelay;
+    // Ensure min doesn't get too close to max (minimum 1 minute gap)
+    if (minDelay >= maxDelay) {
+      maxDelay = minDelay + 1;
+      // Don't exceed the maximum slider value
+      if (maxDelay > 180) {
+        maxDelay = 180;
+        minDelay = 179;
+        minTimingSlider.value = minDelay;
+      }
       maxTimingSlider.value = maxDelay;
     }
     
@@ -47,9 +53,15 @@ document.addEventListener('DOMContentLoaded', function() {
     let minDelay = parseInt(minTimingSlider.value);
     let maxDelay = parseInt(maxTimingSlider.value);
     
-    // Ensure max doesn't go below min
-    if (maxDelay < minDelay) {
-      minDelay = maxDelay;
+    // Ensure max doesn't get too close to min (minimum 1 minute gap)
+    if (maxDelay <= minDelay) {
+      minDelay = maxDelay - 1;
+      // Don't go below the minimum slider value
+      if (minDelay < 1) {
+        minDelay = 1;
+        maxDelay = 2;
+        maxTimingSlider.value = maxDelay;
+      }
       minTimingSlider.value = minDelay;
     }
     
@@ -64,8 +76,13 @@ document.addEventListener('DOMContentLoaded', function() {
   // Add preset button event listeners
   presetButtons.forEach(button => {
     button.addEventListener('click', function() {
-      const minDelay = parseInt(button.dataset.min);
-      const maxDelay = parseInt(button.dataset.max);
+      let minDelay = parseInt(button.dataset.min);
+      let maxDelay = parseInt(button.dataset.max);
+      
+      // Ensure preset respects minimum 1-minute gap (safety check)
+      if (maxDelay <= minDelay) {
+        maxDelay = minDelay + 1;
+      }
       
       minTimingSlider.value = minDelay;
       maxTimingSlider.value = maxDelay;
