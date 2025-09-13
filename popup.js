@@ -44,9 +44,7 @@ document.addEventListener('DOMContentLoaded', function() {
     updateCurrentValue(minDelay, maxDelay);
     updateRangeFill(minDelay, maxDelay);
     
-    chrome.storage.sync.set({minDelayMinutes: minDelay, maxDelayMinutes: maxDelay}, function() {
-      console.log('[Popup] Saved min delay:', minDelay, 'max delay:', maxDelay, 'minutes');
-    });
+    chrome.storage.sync.set({minDelayMinutes: minDelay, maxDelayMinutes: maxDelay});
   });
 
   maxTimingSlider.addEventListener('input', function() {
@@ -68,9 +66,7 @@ document.addEventListener('DOMContentLoaded', function() {
     updateCurrentValue(minDelay, maxDelay);
     updateRangeFill(minDelay, maxDelay);
     
-    chrome.storage.sync.set({minDelayMinutes: minDelay, maxDelayMinutes: maxDelay}, function() {
-      console.log('[Popup] Saved min delay:', minDelay, 'max delay:', maxDelay, 'minutes');
-    });
+    chrome.storage.sync.set({minDelayMinutes: minDelay, maxDelayMinutes: maxDelay});
   });
 
   // Add preset button event listeners
@@ -90,9 +86,7 @@ document.addEventListener('DOMContentLoaded', function() {
       updateCurrentValue(minDelay, maxDelay);
       updateRangeFill(minDelay, maxDelay);
       
-      chrome.storage.sync.set({minDelayMinutes: minDelay, maxDelayMinutes: maxDelay}, function() {
-        console.log('[Popup] Applied preset:', minDelay, '-', maxDelay, 'minutes');
-      });
+      chrome.storage.sync.set({minDelayMinutes: minDelay, maxDelayMinutes: maxDelay});
     });
   });
 
