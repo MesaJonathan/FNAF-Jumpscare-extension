@@ -14,11 +14,20 @@ const videos = [
   'Toy Freddy.mp4'
 ];
 
-function getRandomVideo() {
-  const randomIndex = Math.floor(Math.random() * videos.length);
-  const video = `videos/${videos[randomIndex]}`;
+async function getRandomVideo() {
+  return new Promise((resolve) => {
+    chrome.storage.sync.get(['selectedVideos'], function(result) {
+      const selectedVideos = result.selectedVideos || videos;
 
-  return video;
+      // If no videos are selected, fall back to all videos
+      const videosToUse = selectedVideos.length > 0 ? selectedVideos : videos;
+
+      const randomIndex = Math.floor(Math.random() * videosToUse.length);
+      const video = `videos/${videosToUse[randomIndex]}`;
+
+      resolve(video);
+    });
+  });
 }
 
 async function getRandomDelayMinutes() {
@@ -40,7 +49,7 @@ async function triggerJumpscare() {
     const tabs = await chrome.tabs.query({highlighted: true});
     
     if (tabs.length > 0) {
-      const video = getRandomVideo();
+      const video = await getRandomVideo();
       
       // Always inject content script first to ensure it's available
       try {

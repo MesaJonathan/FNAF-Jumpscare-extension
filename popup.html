@@ -160,6 +160,7 @@
       border-radius: 4px;
       z-index: 2;
       box-shadow: 0 2px 8px rgba(255,107,53,0.3);
+      min-width: 0;
     }
     
     .dual-range-slider:disabled {
@@ -239,6 +240,119 @@
       color: #ccc;
       border-color: #555;
     }
+
+    .video-selection {
+      margin-top: 20px;
+      padding-top: 15px;
+      border-top: 1px solid #444;
+    }
+
+    .video-selection-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      padding: 8px;
+      background: #333;
+      border: 1px solid #555;
+      border-radius: 4px;
+      transition: all 0.2s ease;
+    }
+
+    .video-selection-header:hover {
+      background: #3a3a3a;
+      border-color: #ff6b35;
+    }
+
+    .video-selection-label {
+      font-size: 12px;
+      color: #ccc;
+      font-weight: bold;
+    }
+
+    .video-count {
+      font-size: 10px;
+      color: #ff6b35;
+      font-weight: 500;
+    }
+
+    .collapse-arrow {
+      font-size: 12px;
+      color: #aaa;
+      transition: transform 0.3s ease;
+    }
+
+    .collapse-arrow.collapsed {
+      transform: rotate(-90deg);
+    }
+
+    .video-checkbox-container {
+      margin-top: 8px;
+      max-height: 200px;
+      overflow: hidden;
+      transition: all 0.3s ease;
+    }
+
+    .video-checkbox-container.collapsed {
+      max-height: 0;
+      margin-top: 0;
+    }
+
+    .video-checkboxes {
+      background: #2a2a2a;
+      border: 1px solid #444;
+      border-radius: 4px;
+      padding: 8px;
+      max-height: 120px;
+      overflow-y: auto;
+    }
+
+    .video-checkbox-item {
+      display: flex;
+      align-items: center;
+      padding: 4px 0;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+
+    .video-checkbox-item:hover {
+      background: rgba(255, 107, 53, 0.1);
+      border-radius: 2px;
+    }
+
+    .video-checkbox-item input[type="checkbox"] {
+      margin-right: 8px;
+      width: 14px;
+      height: 14px;
+      accent-color: #ff6b35;
+      cursor: pointer;
+    }
+
+    .checkbox-label {
+      font-size: 11px;
+      color: #ccc;
+      flex: 1;
+      cursor: pointer;
+    }
+
+    .select-all-btn {
+      background: #444;
+      border: 1px solid #555;
+      color: #ccc;
+      padding: 6px 12px;
+      border-radius: 4px;
+      font-size: 10px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      margin-top: 8px;
+      width: 100%;
+    }
+
+    .select-all-btn:hover {
+      background: #ff6b35;
+      color: #fff;
+      border-color: #ff6b35;
+    }
   </style>
 </head>
 <body>
@@ -246,7 +360,7 @@
     <div class="title">FNAF Jumpscares</div>
     
     <div class="timing-control">
-      <div class="timing-label">Jumpscare Window</div>
+      <div class="timing-label">Jumpscare will be scheduled for random time between the next ...</div>
       
       <div class="dual-range-container">
         <input type="range" id="minTimingSlider" class="dual-range-slider dual-range-min" min="1" max="180" value="5">
@@ -281,8 +395,61 @@
     </label>
     
     <div class="status" id="status">Disabled</div>
+
+    <div class="video-selection">
+      <div class="video-selection-header" id="videoSelectionHeader">
+        <span class="video-selection-label">Video Selection:</span>
+        <span class="video-count" id="videoCount">10 videos selected</span>
+        <span class="collapse-arrow collapsed" id="collapseArrow">▼</span>
+      </div>
+      <div class="video-checkbox-container collapsed" id="videoCheckboxContainer">
+        <div class="video-checkboxes">
+          <label class="video-checkbox-item">
+            <input type="checkbox" value="Bonnie.mp4" checked>
+            <span class="checkbox-label">Bonnie</span>
+          </label>
+          <label class="video-checkbox-item">
+            <input type="checkbox" value="Chika.mp4" checked>
+            <span class="checkbox-label">Chika</span>
+          </label>
+          <label class="video-checkbox-item">
+            <input type="checkbox" value="Foxy.mp4" checked>
+            <span class="checkbox-label">Foxy</span>
+          </label>
+          <label class="video-checkbox-item">
+            <input type="checkbox" value="Freddy.mp4" checked>
+            <span class="checkbox-label">Freddy</span>
+          </label>
+          <label class="video-checkbox-item">
+            <input type="checkbox" value="Golden Freddy.mp4" checked>
+            <span class="checkbox-label">Golden Freddy</span>
+          </label>
+          <label class="video-checkbox-item">
+            <input type="checkbox" value="Mangle.mp4" checked>
+            <span class="checkbox-label">Mangle</span>
+          </label>
+          <label class="video-checkbox-item">
+            <input type="checkbox" value="Puppet.mp4" checked>
+            <span class="checkbox-label">Puppet</span>
+          </label>
+          <label class="video-checkbox-item">
+            <input type="checkbox" value="Toy Bonnie.mp4" checked>
+            <span class="checkbox-label">Toy Bonnie</span>
+          </label>
+          <label class="video-checkbox-item">
+            <input type="checkbox" value="Toy Chika.mp4" checked>
+            <span class="checkbox-label">Toy Chika</span>
+          </label>
+          <label class="video-checkbox-item">
+            <input type="checkbox" value="Toy Freddy.mp4" checked>
+            <span class="checkbox-label">Toy Freddy</span>
+          </label>
+        </div>
+        <button class="select-all-btn" id="selectAllBtn">Deselect All</button>
+      </div>
+    </div>
   </div>
-  
+
   <script src="popup.js"></script>
 </body>
 </html>

@@ -6,11 +6,21 @@ document.addEventListener('DOMContentLoaded', function() {
   const currentValueText = document.getElementById('currentValue');
   const rangeFill = document.getElementById('rangeFill');
   const presetButtons = document.querySelectorAll('.preset-btn');
+  const videoSelectionHeader = document.getElementById('videoSelectionHeader');
+  const videoCheckboxContainer = document.getElementById('videoCheckboxContainer');
+  const collapseArrow = document.getElementById('collapseArrow');
+  const videoCount = document.getElementById('videoCount');
+  const selectAllBtn = document.getElementById('selectAllBtn');
+  const videoCheckboxes = document.querySelectorAll('.video-checkbox-item input[type="checkbox"]');
   
-  chrome.storage.sync.get(['extensionEnabled', 'minDelayMinutes', 'maxDelayMinutes'], function(result) {
+  chrome.storage.sync.get(['extensionEnabled', 'minDelayMinutes', 'maxDelayMinutes', 'selectedVideos'], function(result) {
     const isEnabled = result.extensionEnabled || false;
     const minDelay = result.minDelayMinutes || 5;
     const maxDelay = result.maxDelayMinutes || 90;
+    const selectedVideos = result.selectedVideos || [
+      'Bonnie.mp4', 'Chika.mp4', 'Foxy.mp4', 'Freddy.mp4', 'Golden Freddy.mp4',
+      'Mangle.mp4', 'Puppet.mp4', 'Toy Bonnie.mp4', 'Toy Chika.mp4', 'Toy Freddy.mp4'
+    ];
     
     enableSwitch.checked = isEnabled;
     minTimingSlider.value = minDelay;
@@ -19,6 +29,7 @@ document.addEventListener('DOMContentLoaded', function() {
     updateSliderState(isEnabled);
     updateCurrentValue(minDelay, maxDelay);
     updateRangeFill(minDelay, maxDelay);
+    updateVideoSelection(selectedVideos);
     
     if (isEnabled) {
       checkActiveTimer();
@@ -90,6 +101,51 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   });
 
+  // Collapse/expand functionality
+  videoSelectionHeader.addEventListener('click', function() {
+    const isCollapsed = videoCheckboxContainer.classList.contains('collapsed');
+
+    if (isCollapsed) {
+      videoCheckboxContainer.classList.remove('collapsed');
+      collapseArrow.classList.remove('collapsed');
+    } else {
+      videoCheckboxContainer.classList.add('collapsed');
+      collapseArrow.classList.add('collapsed');
+    }
+  });
+
+  // Video checkbox event listeners
+  videoCheckboxes.forEach(checkbox => {
+    checkbox.addEventListener('change', function() {
+      const selectedVideos = Array.from(videoCheckboxes)
+        .filter(cb => cb.checked)
+        .map(cb => cb.value);
+
+      updateVideoCount(selectedVideos.length);
+      updateSelectAllButton(selectedVideos.length);
+      chrome.storage.sync.set({selectedVideos: selectedVideos});
+    });
+  });
+
+  selectAllBtn.addEventListener('click', function() {
+    const allChecked = Array.from(videoCheckboxes).every(cb => cb.checked);
+
+    if (allChecked) {
+      // Deselect all
+      videoCheckboxes.forEach(cb => cb.checked = false);
+      selectAllBtn.textContent = 'Select All';
+      updateVideoCount(0);
+      chrome.storage.sync.set({selectedVideos: []});
+    } else {
+      // Select all
+      videoCheckboxes.forEach(cb => cb.checked = true);
+      selectAllBtn.textContent = 'Deselect All';
+      updateVideoCount(videoCheckboxes.length);
+      const allVideos = Array.from(videoCheckboxes).map(cb => cb.value);
+      chrome.storage.sync.set({selectedVideos: allVideos});
+    }
+  });
+
   enableSwitch.addEventListener('change', function() {
     const isEnabled = enableSwitch.checked;
     
@@ -148,9 +204,31 @@ document.addEventListener('DOMContentLoaded', function() {
   function updateRangeFill(minDelay, maxDelay) {
     const minPercent = ((minDelay - 1) / (180 - 1)) * 100;
     const maxPercent = ((maxDelay - 1) / (180 - 1)) * 100;
-    
+
+    const width = Math.max(0, maxPercent - minPercent);
+
     rangeFill.style.left = minPercent + '%';
-    rangeFill.style.width = (maxPercent - minPercent) + '%';
+    rangeFill.style.width = width + '%';
+
+    // Hide the fill when width is too small to prevent visual artifacts
+    rangeFill.style.display = width < 0.5 ? 'none' : 'block';
+  }
+
+  function updateVideoSelection(selectedVideos) {
+    videoCheckboxes.forEach(checkbox => {
+      checkbox.checked = selectedVideos.includes(checkbox.value);
+    });
+    updateVideoCount(selectedVideos.length);
+    updateSelectAllButton(selectedVideos.length);
+  }
+
+  function updateVideoCount(count) {
+    videoCount.textContent = `${count} video${count === 1 ? '' : 's'} selected`;
+  }
+
+  function updateSelectAllButton(selectedCount) {
+    const totalCount = videoCheckboxes.length;
+    selectAllBtn.textContent = selectedCount === totalCount ? 'Deselect All' : 'Select All';
   }
   
   async function checkActiveTimer() {
@@ -158,8 +236,8 @@ document.addEventListener('DOMContentLoaded', function() {
       const alarm = await chrome.alarms.get('fnafJumpscare');
       if (alarm) {
         const endTime = new Date(alarm.scheduledTime);
-        // console.log('[Popup] Timer end time:', endTime.toLocaleString());
-        // console.log('[Popup] Time remaining:', Math.round((alarm.scheduledTime - Date.now()) / 1000 / 60), 'minutes');
+        console.log('[Popup] Timer end time:', endTime.toLocaleString());
+        console.log('[Popup] Time remaining:', Math.round((alarm.scheduledTime - Date.now()) / 1000 / 60), 'minutes');
       } else {
         console.log('[Popup] No active timer found');
       }
