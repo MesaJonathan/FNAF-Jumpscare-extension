@@ -232,8 +232,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const endTime = new Date(alarm.scheduledTime);
         // console.log('[Popup] Timer end time:', endTime.toLocaleString());
         // console.log('[Popup] Time remaining:', Math.round((alarm.scheduledTime - Date.now()) / 1000 / 60), 'minutes');
-      } else {
-        console.log('[Popup] No active timer found');
       }
     } catch (error) {
       console.log('[Popup] Error checking timer:', error.message);
