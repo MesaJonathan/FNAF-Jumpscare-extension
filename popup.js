@@ -1,10 +1,12 @@
 document.addEventListener('DOMContentLoaded', function() {
   const enableSwitch = document.getElementById('enableSwitch');
   const statusText = document.getElementById('status');
-  const minTimingSlider = document.getElementById('minTimingSlider');
-  const maxTimingSlider = document.getElementById('maxTimingSlider');
-  const currentValueText = document.getElementById('currentValue');
-  const rangeFill = document.getElementById('rangeFill');
+  const minHours = document.getElementById('minHours');
+  const minMinutes = document.getElementById('minMinutes');
+  const minSeconds = document.getElementById('minSeconds');
+  const maxHours = document.getElementById('maxHours');
+  const maxMinutes = document.getElementById('maxMinutes');
+  const maxSeconds = document.getElementById('maxSeconds');
   const presetButtons = document.querySelectorAll('.preset-btn');
   const videoSelectionHeader = document.getElementById('videoSelectionHeader');
   const videoCheckboxContainer = document.getElementById('videoCheckboxContainer');
@@ -13,22 +15,20 @@ document.addEventListener('DOMContentLoaded', function() {
   const selectAllBtn = document.getElementById('selectAllBtn');
   const videoCheckboxes = document.querySelectorAll('.video-checkbox-item input[type="checkbox"]');
   
-  chrome.storage.sync.get(['extensionEnabled', 'minDelayMinutes', 'maxDelayMinutes', 'selectedVideos'], function(result) {
+  chrome.storage.sync.get(['extensionEnabled', 'minDelaySeconds', 'maxDelaySeconds', 'selectedVideos'], function(result) {
     const isEnabled = result.extensionEnabled || false;
-    const minDelay = result.minDelayMinutes || 5;
-    const maxDelay = result.maxDelayMinutes || 90;
+    const minDelaySeconds = result.minDelaySeconds || 300; // 5 minutes
+    const maxDelaySeconds = result.maxDelaySeconds || 5400; // 1.5 hours
     const selectedVideos = result.selectedVideos || [
       'Bonnie.mp4', 'Chika.mp4', 'Foxy.mp4', 'Freddy.mp4', 'Golden Freddy.mp4',
       'Mangle.mp4', 'Puppet.mp4', 'Toy Bonnie.mp4', 'Toy Chika.mp4', 'Toy Freddy.mp4'
     ];
-    
+
     enableSwitch.checked = isEnabled;
-    minTimingSlider.value = minDelay;
-    maxTimingSlider.value = maxDelay;
+    setTimeInputs('min', minDelaySeconds);
+    setTimeInputs('max', maxDelaySeconds);
     updateStatus(isEnabled);
-    updateSliderState(isEnabled);
-    updateCurrentValue(minDelay, maxDelay);
-    updateRangeFill(minDelay, maxDelay);
+    updateTimeInputState(isEnabled);
     updateVideoSelection(selectedVideos);
     
     if (isEnabled) {
@@ -36,68 +36,32 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   });
   
-  minTimingSlider.addEventListener('input', function() {
-    let minDelay = parseInt(minTimingSlider.value);
-    let maxDelay = parseInt(maxTimingSlider.value);
-    
-    // Ensure min doesn't get too close to max (minimum 1 minute gap)
-    if (minDelay >= maxDelay) {
-      maxDelay = minDelay + 1;
-      // Don't exceed the maximum slider value
-      if (maxDelay > 180) {
-        maxDelay = 180;
-        minDelay = 179;
-        minTimingSlider.value = minDelay;
-      }
-      maxTimingSlider.value = maxDelay;
-    }
-    
-    updateCurrentValue(minDelay, maxDelay);
-    updateRangeFill(minDelay, maxDelay);
-    
-    chrome.storage.sync.set({minDelayMinutes: minDelay, maxDelayMinutes: maxDelay});
-  });
-
-  maxTimingSlider.addEventListener('input', function() {
-    let minDelay = parseInt(minTimingSlider.value);
-    let maxDelay = parseInt(maxTimingSlider.value);
-    
-    // Ensure max doesn't get too close to min (minimum 1 minute gap)
-    if (maxDelay <= minDelay) {
-      minDelay = maxDelay - 1;
-      // Don't go below the minimum slider value
-      if (minDelay < 1) {
-        minDelay = 1;
-        maxDelay = 2;
-        maxTimingSlider.value = maxDelay;
-      }
-      minTimingSlider.value = minDelay;
-    }
-    
-    updateCurrentValue(minDelay, maxDelay);
-    updateRangeFill(minDelay, maxDelay);
-    
-    chrome.storage.sync.set({minDelayMinutes: minDelay, maxDelayMinutes: maxDelay});
+  // Time input event listeners
+  const timeInputs = [minHours, minMinutes, minSeconds, maxHours, maxMinutes, maxSeconds];
+  timeInputs.forEach(input => {
+    input.addEventListener('input', function() {
+      validateAndSaveTimeInputs();
+    });
   });
 
   // Add preset button event listeners
   presetButtons.forEach(button => {
     button.addEventListener('click', function() {
-      let minDelay = parseInt(button.dataset.min);
-      let maxDelay = parseInt(button.dataset.max);
-      
-      // Ensure preset respects minimum 1-minute gap (safety check)
-      if (maxDelay <= minDelay) {
-        maxDelay = minDelay + 1;
-      }
-      
-      minTimingSlider.value = minDelay;
-      maxTimingSlider.value = maxDelay;
-      
-      updateCurrentValue(minDelay, maxDelay);
-      updateRangeFill(minDelay, maxDelay);
-      
-      chrome.storage.sync.set({minDelayMinutes: minDelay, maxDelayMinutes: maxDelay});
+      const minH = parseInt(button.dataset.minH) || 0;
+      const minM = parseInt(button.dataset.minM) || 0;
+      const minS = parseInt(button.dataset.minS) || 0;
+      const maxH = parseInt(button.dataset.maxH) || 0;
+      const maxM = parseInt(button.dataset.maxM) || 0;
+      const maxS = parseInt(button.dataset.maxS) || 0;
+
+      minHours.value = minH;
+      minMinutes.value = minM;
+      minSeconds.value = minS;
+      maxHours.value = maxH;
+      maxMinutes.value = maxM;
+      maxSeconds.value = maxS;
+
+      validateAndSaveTimeInputs();
     });
   });
 
@@ -151,7 +115,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     chrome.storage.sync.set({extensionEnabled: isEnabled}, function() {
       updateStatus(isEnabled);
-      updateSliderState(isEnabled);
+      updateTimeInputState(isEnabled);
       
       chrome.runtime.sendMessage({
         action: 'toggleExtension',
@@ -173,45 +137,75 @@ document.addEventListener('DOMContentLoaded', function() {
     statusText.style.color = enabled ? '#4CAF50' : '#ff6b35';
   }
   
-  function updateSliderState(enabled) {
-    minTimingSlider.disabled = enabled;
-    maxTimingSlider.disabled = enabled;
+  function updateTimeInputState(enabled) {
+    timeInputs.forEach(input => {
+      input.disabled = enabled;
+    });
     presetButtons.forEach(button => {
       button.disabled = enabled;
     });
   }
   
-  function updateCurrentValue(minDelay, maxDelay) {
-    function formatTime(minutes) {
-      if (minutes < 60) {
-        return `${minutes} min${minutes === 1 ? '' : 's'}`;
-      } else {
-        const hours = Math.floor(minutes / 60);
-        const remainingMinutes = minutes % 60;
-        if (remainingMinutes === 0) {
-          return `${hours}h`;
-        } else {
-          return `${hours}h ${remainingMinutes}m`;
-        }
-      }
+  function setTimeInputs(type, totalSeconds) {
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+
+    if (type === 'min') {
+      minHours.value = hours;
+      minMinutes.value = minutes;
+      minSeconds.value = seconds;
+    } else {
+      maxHours.value = hours;
+      maxMinutes.value = minutes;
+      maxSeconds.value = seconds;
     }
-    
-    const minText = formatTime(minDelay);
-    const maxText = formatTime(maxDelay);
-    currentValueText.textContent = `${minText} - ${maxText}`;
   }
-  
-  function updateRangeFill(minDelay, maxDelay) {
-    const minPercent = ((minDelay - 1) / (180 - 1)) * 100;
-    const maxPercent = ((maxDelay - 1) / (180 - 1)) * 100;
 
-    const width = Math.max(0, maxPercent - minPercent);
+  function getTimeInputSeconds(type) {
+    if (type === 'min') {
+      return (parseInt(minHours.value) || 0) * 3600 +
+             (parseInt(minMinutes.value) || 0) * 60 +
+             (parseInt(minSeconds.value) || 0);
+    } else {
+      return (parseInt(maxHours.value) || 0) * 3600 +
+             (parseInt(maxMinutes.value) || 0) * 60 +
+             (parseInt(maxSeconds.value) || 0);
+    }
+  }
 
-    rangeFill.style.left = minPercent + '%';
-    rangeFill.style.width = width + '%';
+  function validateAndSaveTimeInputs() {
+    let minSeconds = getTimeInputSeconds('min');
+    let maxSeconds = getTimeInputSeconds('max');
 
-    // Hide the fill when width is too small to prevent visual artifacts
-    rangeFill.style.display = width < 0.5 ? 'none' : 'block';
+    // Ensure minimum delay is at least 10 seconds
+    if (minSeconds < 10) {
+      minSeconds = 10;
+      setTimeInputs('min', minSeconds);
+    }
+
+    // Ensure maximum delay does not exceed 4 hours (14400 seconds)
+    if (maxSeconds > 14400) {
+      maxSeconds = 14400;
+      setTimeInputs('max', maxSeconds);
+    }
+
+    // Ensure max is greater than min
+    if (maxSeconds <= minSeconds) {
+      maxSeconds = minSeconds + 1;
+      // If this would exceed 4 hours, adjust min instead
+      if (maxSeconds > 14400) {
+        maxSeconds = 14400;
+        minSeconds = maxSeconds - 1;
+        setTimeInputs('min', minSeconds);
+      }
+      setTimeInputs('max', maxSeconds);
+    }
+
+    chrome.storage.sync.set({
+      minDelaySeconds: minSeconds,
+      maxDelaySeconds: maxSeconds
+    });
   }
 
   function updateVideoSelection(selectedVideos) {
@@ -236,8 +230,8 @@ document.addEventListener('DOMContentLoaded', function() {
       const alarm = await chrome.alarms.get('fnafJumpscare');
       if (alarm) {
         const endTime = new Date(alarm.scheduledTime);
-        console.log('[Popup] Timer end time:', endTime.toLocaleString());
-        console.log('[Popup] Time remaining:', Math.round((alarm.scheduledTime - Date.now()) / 1000 / 60), 'minutes');
+        // console.log('[Popup] Timer end time:', endTime.toLocaleString());
+        // console.log('[Popup] Time remaining:', Math.round((alarm.scheduledTime - Date.now()) / 1000 / 60), 'minutes');
       } else {
         console.log('[Popup] No active timer found');
       }

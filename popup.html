@@ -84,117 +84,62 @@
       color: #ccc;
     }
     
-    .dual-range-container {
-      position: relative;
-      margin: 20px 0;
-      height: 30px;
+    .time-inputs-container {
+      margin: 15px 0;
     }
-    
-    .dual-range-slider {
-      position: absolute;
-      width: 100%;
-      height: 4px;
-      background: transparent;
-      outline: none;
-      -webkit-appearance: none;
-      pointer-events: none;
-      top: 13px;
+
+    .time-input-group {
+      margin-bottom: 12px;
     }
-    
-    .dual-range-slider::-webkit-slider-thumb {
-      appearance: none;
-      width: 20px;
-      height: 20px;
-      border-radius: 50%;
-      background: #ff6b35;
-      cursor: pointer;
-      pointer-events: all;
-      transition: all 0.3s ease;
-      position: relative;
-      z-index: 3;
-      border: 2px solid #fff;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-    }
-    
-    .dual-range-slider::-webkit-slider-thumb:hover {
-      transform: scale(1.1);
-      box-shadow: 0 3px 10px rgba(255,107,53,0.4);
-    }
-    
-    .dual-range-slider::-moz-range-thumb {
-      width: 20px;
-      height: 20px;
-      border-radius: 50%;
-      background: #ff6b35;
-      cursor: pointer;
-      border: 2px solid #fff;
-      pointer-events: all;
-      position: relative;
-      z-index: 3;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-      transition: all 0.3s ease;
-    }
-    
-    .dual-range-slider::-moz-range-thumb:hover {
-      transform: scale(1.1);
-      box-shadow: 0 3px 10px rgba(255,107,53,0.4);
-    }
-    
-    .dual-range-track {
-      position: absolute;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 100%;
-      height: 4px;
-      background: #444;
-      border-radius: 2px;
-      z-index: 1;
-    }
-    
-    .dual-range-fill {
-      position: absolute;
-      top: 50%;
-      transform: translateY(-50%);
-      height: 8px;
-      background: linear-gradient(90deg, #ff6b35, #ff8c42);
-      border-radius: 4px;
-      z-index: 2;
-      box-shadow: 0 2px 8px rgba(255,107,53,0.3);
-      min-width: 0;
-    }
-    
-    .dual-range-slider:disabled {
-      opacity: 0.4;
-    }
-    
-    .dual-range-slider:disabled::-webkit-slider-thumb {
-      cursor: not-allowed;
-      background: #666;
-      border-color: #888;
-      box-shadow: none;
-    }
-    
-    .dual-range-slider:disabled::-moz-range-thumb {
-      cursor: not-allowed;
-      background: #666;
-      border-color: #888;
-      box-shadow: none;
-    }
-    
-    .range-values {
-      display: flex;
-      justify-content: space-between;
-      font-size: 9px;
-      color: #777;
-      margin-top: 2px;
-    }
-    
-    .current-value {
-      font-size: 13px;
-      color: #ff6b35;
-      margin: 8px 0;
+
+    .time-input-label {
+      font-size: 11px;
+      color: #aaa;
+      margin-bottom: 6px;
       font-weight: 500;
+    }
+
+    .time-inputs {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .time-input-field {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+    }
+
+    .time-input-field input[type="number"] {
+      width: 40px;
+      background: #444;
+      border: 1px solid #555;
+      color: #fff;
+      padding: 6px 4px;
+      border-radius: 4px;
+      font-size: 12px;
       text-align: center;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    .time-input-field input[type="number"]:focus {
+      border-color: #ff6b35;
+      box-shadow: 0 0 0 2px rgba(255, 107, 53, 0.2);
+    }
+
+    .time-input-field input[type="number"]:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      background: #333;
+      color: #666;
+    }
+
+    .time-input-field label {
+      font-size: 10px;
+      color: #aaa;
+      font-weight: 500;
     }
     
     .presets-container {
@@ -208,20 +153,21 @@
     }
     
     .preset-buttons {
-      display: flex;
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
       gap: 6px;
-      flex-wrap: wrap;
     }
     
     .preset-btn {
       background: #444;
       border: 1px solid #555;
       color: #ccc;
-      padding: 4px 8px;
+      padding: 6px 8px;
       border-radius: 4px;
-      font-size: 10px;
+      font-size: 9px;
       cursor: pointer;
       transition: all 0.2s ease;
+      text-align: center;
     }
     
     .preset-btn:hover {
@@ -360,31 +306,55 @@
     <div class="title">FNAF Jumpscares</div>
     
     <div class="timing-control">
-      <div class="timing-label">Jumpscare will be scheduled for random time between the next ...</div>
-      
-      <div class="dual-range-container">
-        <input type="range" id="minTimingSlider" class="dual-range-slider dual-range-min" min="1" max="180" value="5">
-        <input type="range" id="maxTimingSlider" class="dual-range-slider dual-range-max" min="1" max="180" value="90">
-        <div class="dual-range-track"></div>
-        <div class="dual-range-fill" id="rangeFill"></div>
+      <div class="timing-label">Jumpscare will be scheduled for random time between:</div>
+
+      <div class="time-inputs-container">
+        <div class="time-input-group">
+          <div class="time-input-label">Start:</div>
+          <div class="time-inputs">
+            <div class="time-input-field">
+              <input type="number" id="minHours" min="0" max="23" value="0">
+              <label>h</label>
+            </div>
+            <div class="time-input-field">
+              <input type="number" id="minMinutes" min="0" max="59" value="5">
+              <label>m</label>
+            </div>
+            <div class="time-input-field">
+              <input type="number" id="minSeconds" min="0" max="59" value="0">
+              <label>s</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="time-input-group">
+          <div class="time-input-label">End:</div>
+          <div class="time-inputs">
+            <div class="time-input-field">
+              <input type="number" id="maxHours" min="0" max="23" value="1">
+              <label>h</label>
+            </div>
+            <div class="time-input-field">
+              <input type="number" id="maxMinutes" min="0" max="59" value="30">
+              <label>m</label>
+            </div>
+            <div class="time-input-field">
+              <input type="number" id="maxSeconds" min="0" max="59" value="0">
+              <label>s</label>
+            </div>
+          </div>
+        </div>
       </div>
-      
-      <div class="range-values">
-        <span>1 min</span>
-        <span>3 hrs</span>
-      </div>
-      
-      <div class="current-value" id="currentValue">5 mins - 1h 30m</div>
-      
+
       <div class="presets-container">
         <div class="presets-label">Quick Presets:</div>
         <div class="preset-buttons">
-          <button class="preset-btn" data-min="1" data-max="5">1-5 min</button>
-          <button class="preset-btn" data-min="5" data-max="15">5-15 min</button>
-          <button class="preset-btn" data-min="10" data-max="30">10-30 min</button>
-          <button class="preset-btn" data-min="30" data-max="60">30min-1h</button>
-          <button class="preset-btn" data-min="60" data-max="120">1-2 hrs</button>
-          <button class="preset-btn" data-min="30" data-max="180">30min-3h</button>
+          <button class="preset-btn" data-min-h="0" data-min-m="0" data-min-s="10" data-max-h="0" data-max-m="1" data-max-s="0">10s-1min</button>
+          <button class="preset-btn" data-min-h="0" data-min-m="1" data-min-s="0" data-max-h="0" data-max-m="5" data-max-s="0">1-5 min</button>
+          <button class="preset-btn" data-min-h="0" data-min-m="5" data-min-s="0" data-max-h="0" data-max-m="15" data-max-s="0">5-15 min</button>
+          <button class="preset-btn" data-min-h="0" data-min-m="15" data-min-s="0" data-max-h="1" data-max-m="0" data-max-s="0">15min-1h</button>
+          <button class="preset-btn" data-min-h="1" data-min-m="0" data-min-s="0" data-max-h="2" data-max-m="0" data-max-s="0">1-2 hrs</button>
+          <button class="preset-btn" data-min-h="2" data-min-m="0" data-min-s="0" data-max-h="4" data-max-m="0" data-max-s="0">2-4 hrs</button>
         </div>
       </div>
     </div>

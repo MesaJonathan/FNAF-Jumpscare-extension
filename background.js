@@ -32,11 +32,12 @@ async function getRandomVideo() {
 
 async function getRandomDelayMinutes() {
   return new Promise((resolve) => {
-    chrome.storage.sync.get(['minDelayMinutes', 'maxDelayMinutes'], function(result) {
-      const minDelay = result.minDelayMinutes || 5;
-      const maxDelay = result.maxDelayMinutes || 90;
+    chrome.storage.sync.get(['minDelaySeconds', 'maxDelaySeconds'], function(result) {
+      const minDelaySeconds = result.minDelaySeconds || 300; // 5 minutes (minimum 10 seconds enforced in popup)
+      const maxDelaySeconds = result.maxDelaySeconds || 5400; // 1.5 hours (maximum 4 hours enforced in popup)
       // Random delay between user-selected min and max
-      const delayMinutes = Math.random() * (maxDelay - minDelay) + minDelay;
+      const delaySeconds = Math.random() * (maxDelaySeconds - minDelaySeconds) + minDelaySeconds;
+      const delayMinutes = delaySeconds / 60;
       resolve(delayMinutes);
     });
   });
