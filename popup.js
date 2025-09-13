@@ -144,6 +144,9 @@ document.addEventListener('DOMContentLoaded', function() {
     presetButtons.forEach(button => {
       button.disabled = enabled;
     });
+    videoCheckboxes.forEach(checkbox => {
+      checkbox.disabled = enabled;
+    });
   }
   
   function setTimeInputs(type, totalSeconds) {

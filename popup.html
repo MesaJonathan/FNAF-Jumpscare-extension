@@ -274,11 +274,27 @@
       cursor: pointer;
     }
 
+    .video-checkbox-item input[type="checkbox"]:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      accent-color: #666;
+    }
+
     .checkbox-label {
       font-size: 11px;
       color: #ccc;
       flex: 1;
       cursor: pointer;
+    }
+
+    .video-checkbox-item:has(input[type="checkbox"]:disabled) {
+      opacity: 0.6;
+      pointer-events: none;
+    }
+
+    .video-checkbox-item:has(input[type="checkbox"]:disabled) .checkbox-label {
+      cursor: not-allowed;
+      color: #777;
     }
 
     .select-all-btn {
